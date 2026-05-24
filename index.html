@@ -199,6 +199,36 @@ function hideInstallModal() {
     document.getElementById("installModal").hidden = true
 }
 
+function bindButtonPress(element, handler) {
+    if (!element) {
+        return
+    }
+
+    let lastPointerEventTime = -Infinity
+    const activate = (event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        handler(event)
+    }
+
+    if (window.PointerEvent) {
+        element.addEventListener("pointerup", (event) => {
+            lastPointerEventTime = event.timeStamp
+            activate(event)
+        })
+    }
+
+    element.addEventListener("click", (event) => {
+        if (event.timeStamp - lastPointerEventTime < 700) {
+            event.preventDefault()
+            event.stopPropagation()
+            return
+        }
+
+        activate(event)
+    })
+}
+
 function setInstallModalState() {
     const title = document.getElementById("installModalTitle")
     const body = document.getElementById("installModalBody")
@@ -287,32 +317,38 @@ async function custom_onload(debug_hidden) {
         }
     })
 
-    loginButton.addEventListener("click", () => {
+    bindButtonPress(loginButton, () => {
         window.overlayAction = "login"
     })
 
-    registerButton.addEventListener("click", () => {
+    bindButtonPress(registerButton, () => {
         window.overlayAction = "register"
     })
 
-    rankingButton.addEventListener("click", () => {
+    bindButtonPress(rankingButton, () => {
         window.overlayAction = "ranking"
     })
 
-    installButton.addEventListener("click", () => {
+    bindButtonPress(installButton, () => {
         requestInstallApp()
     })
 
-    installNowButton.addEventListener("click", () => {
+    bindButtonPress(installNowButton, () => {
         triggerInstallPrompt()
     })
 
-    closeInstallButton.addEventListener("click", () => {
+    bindButtonPress(closeInstallButton, () => {
         hideInstallModal()
     })
 
     installModal.addEventListener("click", (event) => {
         if (event.target === installModal) {
+            hideInstallModal()
+        }
+    })
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !installModal.hidden) {
             hideInstallModal()
         }
     })
@@ -634,6 +670,8 @@ function custom_postrun() {}
             font-size: 16px;
             font-weight: 700;
             font-family: Verdana, sans-serif;
+            touch-action: manipulation;
+            cursor: pointer;
             -webkit-appearance: none;
             appearance: none;
         }

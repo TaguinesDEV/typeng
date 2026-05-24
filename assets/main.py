@@ -151,6 +151,21 @@ def browser_window():
     return getattr(browser_platform, "window", None)
 
 
+def browser_value_to_python(value):
+    if value is None:
+        return None
+
+    try:
+        value = value.to_py()
+    except Exception:
+        pass
+
+    if isinstance(value, (str, int, float, bool, dict, list, tuple)):
+        return value
+
+    return value
+
+
 def install_app():
     browser = browser_window()
     if browser is not None:
@@ -199,12 +214,16 @@ def sync_web_login_form_values():
         return
 
     try:
-        values = browser.getLoginFormValues()
+        values = browser_value_to_python(browser.getLoginFormValues())
     except Exception:
         return
 
-    username = getattr(values, "username", None)
-    password = getattr(values, "password", None)
+    if isinstance(values, dict):
+        username = values.get("username")
+        password = values.get("password")
+    else:
+        username = getattr(values, "username", None)
+        password = getattr(values, "password", None)
 
     if username is not None:
         login_username = str(username)[:22]
@@ -259,7 +278,7 @@ def sync_web_game_input_value():
         return
 
     try:
-        value = browser.getGameInputValue()
+        value = browser_value_to_python(browser.getGameInputValue())
     except Exception:
         return
 
@@ -305,9 +324,14 @@ def pop_web_overlay_action():
         return None
 
     try:
-        return browser.popOverlayAction()
+        action = browser_value_to_python(browser.popOverlayAction())
     except Exception:
         return None
+
+    if action is None:
+        return None
+
+    return str(action).strip().lower()
 
 
 def rounded_rect(rect, color, radius=18, border_color=None, border_width=0):
