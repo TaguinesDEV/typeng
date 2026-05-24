@@ -165,6 +165,46 @@ function setGameInputValue(value = "") {
     document.getElementById("gameTypingInput").value = value ?? ""
 }
 
+function submitOverlayAction(action, event) {
+    if (event) {
+        event.preventDefault()
+        event.stopPropagation()
+    }
+
+    window.overlayAction = action
+    return false
+}
+
+function openInstallFromButton(event) {
+    if (event) {
+        event.preventDefault()
+        event.stopPropagation()
+    }
+
+    requestInstallApp()
+    return false
+}
+
+function closeInstallFromButton(event) {
+    if (event) {
+        event.preventDefault()
+        event.stopPropagation()
+    }
+
+    hideInstallModal()
+    return false
+}
+
+function installNowFromButton(event) {
+    if (event) {
+        event.preventDefault()
+        event.stopPropagation()
+    }
+
+    triggerInstallPrompt()
+    return false
+}
+
 function popOverlayAction() {
     const action = window.overlayAction ?? null
     window.overlayAction = null
@@ -217,6 +257,10 @@ function bindButtonPress(element, handler) {
             activate(event)
         })
     }
+
+    element.addEventListener("touchend", (event) => {
+        activate(event)
+    }, { passive: false })
 
     element.addEventListener("click", (event) => {
         if (event.timeStamp - lastPointerEventTime < 700) {
@@ -578,6 +622,10 @@ function custom_postrun() {}
             font-weight: 700;
             font-family: Verdana, sans-serif;
             box-shadow: 0 5px 14px rgba(14, 23, 35, 0.18);
+            pointer-events: auto;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
             -webkit-appearance: none;
             appearance: none;
         }
@@ -732,10 +780,10 @@ height="760px"
                 <input id="loginPanelPassword" class="web-login-field" type="password" inputmode="text" autocomplete="current-password" autocapitalize="none" spellcheck="false" placeholder="Enter password">
                 <div id="loginPanelMessage" class="web-login-message"></div>
                 <div class="web-login-grid">
-                    <button id="loginPanelLogin" class="web-login-button login" type="button">LOG IN</button>
-                    <button id="loginPanelRegister" class="web-login-button register" type="button">REGISTER</button>
-                    <button id="loginPanelRanking" class="web-login-button ranking" type="button">RANKING</button>
-                    <button id="loginPanelInstall" class="web-login-button install" type="button">INSTALL APP</button>
+                    <button id="loginPanelLogin" class="web-login-button login" type="button" onclick="return submitOverlayAction('login', event)" ontouchend="return submitOverlayAction('login', event)" onpointerup="return submitOverlayAction('login', event)">LOG IN</button>
+                    <button id="loginPanelRegister" class="web-login-button register" type="button" onclick="return submitOverlayAction('register', event)" ontouchend="return submitOverlayAction('register', event)" onpointerup="return submitOverlayAction('register', event)">REGISTER</button>
+                    <button id="loginPanelRanking" class="web-login-button ranking" type="button" onclick="return submitOverlayAction('ranking', event)" ontouchend="return submitOverlayAction('ranking', event)" onpointerup="return submitOverlayAction('ranking', event)">RANKING</button>
+                    <button id="loginPanelInstall" class="web-login-button install" type="button" onclick="return openInstallFromButton(event)" ontouchend="return openInstallFromButton(event)" onpointerup="return openInstallFromButton(event)">INSTALL APP</button>
                 </div>
                 <p class="web-login-tip">Tip: tap the fields and use your phone keyboard normally.</p>
             </div>
@@ -749,8 +797,8 @@ height="760px"
             <h2 id="installModalTitle" class="install-modal-title">Install App</h2>
             <p id="installModalBody" class="install-modal-body"></p>
             <div class="install-modal-actions">
-                <button id="installNowButton" class="install-modal-button primary" type="button">Install Now</button>
-                <button id="closeInstallModal" class="install-modal-button secondary" type="button">Close</button>
+                <button id="installNowButton" class="install-modal-button primary" type="button" onclick="return installNowFromButton(event)" ontouchend="return installNowFromButton(event)" onpointerup="return installNowFromButton(event)">Install Now</button>
+                <button id="closeInstallModal" class="install-modal-button secondary" type="button" onclick="return closeInstallFromButton(event)" ontouchend="return closeInstallFromButton(event)" onpointerup="return closeInstallFromButton(event)">Close</button>
             </div>
         </div>
     </div>
