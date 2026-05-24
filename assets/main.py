@@ -151,6 +151,18 @@ def browser_window():
     return getattr(browser_platform, "window", None)
 
 
+def install_app():
+    browser = browser_window()
+    if browser is not None:
+        try:
+            browser.requestInstallApp()
+            return
+        except Exception:
+            pass
+
+    open_url(INSTALL_APP_URL)
+
+
 def show_web_login_panel():
     global web_login_panel_visible
 
@@ -796,7 +808,7 @@ def handle_login_pointer(position):
     elif buttons["ranking"].collidepoint(position):
         screen = SCREEN_RANKING
     elif buttons["install"].collidepoint(position):
-        open_url(INSTALL_APP_URL)
+        install_app()
 
 
 def handle_menu_pointer(position):
@@ -810,7 +822,7 @@ def handle_menu_pointer(position):
     elif buttons["logout"].collidepoint(position):
         logout_user()
     elif buttons["install"].collidepoint(position):
-        open_url(INSTALL_APP_URL)
+        install_app()
 
 
 def handle_menu_key(event):
@@ -823,7 +835,7 @@ def handle_menu_key(event):
     elif event.key == pygame.K_r:
         screen = SCREEN_RANKING
     elif event.key == pygame.K_i:
-        open_url(INSTALL_APP_URL)
+        install_app()
 
 
 def handle_game_text(event):
@@ -899,8 +911,6 @@ async def main():
             register_user()
         elif web_action == "ranking" and screen == SCREEN_LOGIN:
             screen = SCREEN_RANKING
-        elif web_action == "install" and screen == SCREEN_LOGIN:
-            open_url(INSTALL_APP_URL)
         elif web_action == "submit" and screen == SCREEN_GAME:
             sync_web_game_input_value()
             score_submission()

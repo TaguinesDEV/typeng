@@ -8,7 +8,7 @@ A `pygame` typing game with login, registration, score tracking, and a browser-f
 - Play a 60-second typing challenge with rotating phrases
 - Track best scores and per-user history
 - View a top-10 ranking board
-- Open an install link from inside the app
+- Install the web app on supported mobile and desktop browsers
 
 ## Project Structure
 
@@ -36,9 +36,10 @@ python main.py
 - The live game URL is `https://taguinesdev.github.io/typeng/`
 - The browser launcher loads `assets/main.py` through the `pygame-web` runtime
 - The workflow in `.github/workflows/deploy-pages.yml` validates the Python files and deploys the site automatically on every push to `main`
+- `Install App` uses the browser install prompt when available and shows fallback instructions when the current browser cannot install directly
 
 ## Notes
 
 - User accounts are stored in `accounts.json`
-- The in-app `Install App` button opens the GitHub Releases page by default
+- Browsers like Chrome can install the site as a web app after the manifest and service worker are deployed
 - If you want Android or iPhone installs next, we can add a proper APK/TestFlight delivery flow on top of this

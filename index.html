@@ -61,6 +61,7 @@ globalThis.__canvas_resized = () => {}
 
 const APP_WIDTH = 430
 const APP_HEIGHT = 760
+let deferredInstallPrompt = null
 
 function appRect() {
     const canvasEl = document.getElementById("canvas")
@@ -170,6 +171,83 @@ function popOverlayAction() {
     return action
 }
 
+function isStandaloneApp() {
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true
+}
+
+function browserInstallInstructions() {
+    const ua = navigator.userAgent || ""
+    const isIOS = /iPhone|iPad|iPod/i.test(ua)
+    const isMessenger = /Messenger/i.test(ua)
+
+    if (isIOS) {
+        return "On iPhone, open this page in Safari, tap Share, then choose Add to Home Screen."
+    }
+
+    if (isMessenger) {
+        return "Messenger's in-app browser may not support install. Open this page in Chrome or your main browser, then use Add to Home screen."
+    }
+
+    return "If your browser does not show an install prompt, open the browser menu and choose Install app or Add to Home screen."
+}
+
+function showInstallModal() {
+    document.getElementById("installModal").hidden = false
+}
+
+function hideInstallModal() {
+    document.getElementById("installModal").hidden = true
+}
+
+function setInstallModalState() {
+    const title = document.getElementById("installModalTitle")
+    const body = document.getElementById("installModalBody")
+    const action = document.getElementById("installNowButton")
+
+    if (isStandaloneApp()) {
+        title.textContent = "Already Installed"
+        body.textContent = "Typing Master is already installed or opened like an app on this device."
+        action.hidden = true
+        return
+    }
+
+    if (deferredInstallPrompt) {
+        title.textContent = "Install Typing Master"
+        body.textContent = "Your browser is ready to install Typing Master. Tap Install now to add it to your phone."
+        action.hidden = false
+        return
+    }
+
+    title.textContent = "Install App"
+    body.textContent = browserInstallInstructions()
+    action.hidden = true
+}
+
+async function triggerInstallPrompt() {
+    if (!deferredInstallPrompt) {
+        setInstallModalState()
+        return
+    }
+
+    const promptEvent = deferredInstallPrompt
+    deferredInstallPrompt = null
+    hideInstallModal()
+
+    await promptEvent.prompt()
+    try {
+        await promptEvent.userChoice
+    } catch (error) {
+        console.warn(error)
+    }
+
+    setInstallModalState()
+}
+
+function requestInstallApp() {
+    setInstallModalState()
+    showInstallModal()
+}
+
 async function custom_onload(debug_hidden) {
     pyconsole.hidden = debug_hidden
     system.hidden = debug_hidden
@@ -191,6 +269,8 @@ async function custom_onload(debug_hidden) {
     const registerButton = document.getElementById("loginPanelRegister")
     const rankingButton = document.getElementById("loginPanelRanking")
     const installButton = document.getElementById("loginPanelInstall")
+    const installNowButton = document.getElementById("installNowButton")
+    const closeInstallButton = document.getElementById("closeInstallModal")
 
     usernameInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -219,7 +299,15 @@ async function custom_onload(debug_hidden) {
     })
 
     installButton.addEventListener("click", () => {
-        window.overlayAction = "install"
+        requestInstallApp()
+    })
+
+    installNowButton.addEventListener("click", () => {
+        triggerInstallPrompt()
+    })
+
+    closeInstallButton.addEventListener("click", () => {
+        hideInstallModal()
     })
 
     gameTypingInput.addEventListener("keydown", (event) => {
@@ -231,7 +319,25 @@ async function custom_onload(debug_hidden) {
 
     window.addEventListener("resize", updateOverlayLayout)
     window.addEventListener("orientationchange", updateOverlayLayout)
+    window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault()
+        deferredInstallPrompt = event
+        setInstallModalState()
+    })
+    window.addEventListener("appinstalled", () => {
+        deferredInstallPrompt = null
+        setInstallModalState()
+        setLoginMessage("Typing Master was installed.")
+    })
+
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("./service-worker.js").catch((error) => console.warn(error))
+        })
+    }
+
     updateOverlayLayout()
+    setInstallModalState()
     show_infobox()
 }
 
@@ -244,8 +350,11 @@ function custom_postrun() {}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="viewport" content="height=device-height, initial-scale=1.0">
+    <meta name="theme-color" content="#d9ebff">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png">
 
     <style>
         #status {
@@ -466,6 +575,67 @@ function custom_postrun() {}
             outline: none;
             box-shadow: none;
         }
+
+        .install-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(15, 24, 38, 0.34);
+        }
+
+        .install-modal-card {
+            width: min(100%, 360px);
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            padding: 22px 20px 18px;
+            box-shadow: 0 18px 40px rgba(14, 23, 35, 0.24);
+        }
+
+        .install-modal-title {
+            margin: 0 0 10px;
+            color: #0f1826;
+            font-size: 24px;
+            line-height: 1.1;
+        }
+
+        .install-modal-body {
+            margin: 0;
+            color: #617080;
+            font-size: 15px;
+            line-height: 1.55;
+            white-space: pre-line;
+        }
+
+        .install-modal-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .install-modal-button {
+            border: 0;
+            border-radius: 16px;
+            padding: 14px 12px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: Verdana, sans-serif;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .install-modal-button.primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .install-modal-button.secondary {
+            background: #e8eef7;
+            color: #405163;
+        }
     </style>
 
     <script src="https://pygame-web.github.io/cdn/0.9.3//browserfs.min.js"></script>
@@ -521,6 +691,16 @@ height="760px"
     </div>
     <div id="mobileGameOverlay" class="mobile-overlay" hidden>
         <input id="gameTypingInput" class="mobile-input" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Start typing here">
+    </div>
+    <div id="installModal" class="install-modal" hidden>
+        <div class="install-modal-card">
+            <h2 id="installModalTitle" class="install-modal-title">Install App</h2>
+            <p id="installModalBody" class="install-modal-body"></p>
+            <div class="install-modal-actions">
+                <button id="installNowButton" class="install-modal-button primary" type="button">Install Now</button>
+                <button id="closeInstallModal" class="install-modal-button secondary" type="button">Close</button>
+            </div>
+        </div>
     </div>
 
     <div id="crt" class="bottomright">

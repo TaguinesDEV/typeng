@@ -37,6 +37,8 @@ jobs:
         run: |
           mkdir -p _site/assets
           cp index.html _site/index.html
+          cp manifest.webmanifest _site/manifest.webmanifest
+          cp service-worker.js _site/service-worker.js
           cp -r assets/. _site/assets/
           touch _site/.nojekyll
 
