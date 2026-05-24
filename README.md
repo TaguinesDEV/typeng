@@ -32,9 +32,10 @@ python main.py
 
 ## GitHub Pages
 
-- Publish the repository root from the `main` branch
+- Set `Settings > Pages > Build and deployment > Source` to `GitHub Actions`
 - The live game URL is `https://taguinesdev.github.io/typeng/`
 - The browser launcher loads `assets/main.py` through the `pygame-web` runtime
+- The workflow in `.github/workflows/deploy-pages.yml` validates the Python files and deploys the site automatically on every push to `main`
 
 ## Notes
 
