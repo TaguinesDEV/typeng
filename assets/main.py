@@ -152,6 +152,15 @@ def browser_window():
     return getattr(browser_platform, "window", None)
 
 
+def browser_document():
+    try:
+        browser_platform = __import__("platform")
+    except Exception:
+        return None
+
+    return getattr(browser_platform, "document", None)
+
+
 def browser_value_to_python(value):
     if value is None:
         return None
@@ -280,21 +289,30 @@ def hide_web_ranking_panel():
 def sync_web_login_form_values():
     global login_username, login_password
 
-    browser = browser_window()
-    if browser is None:
-        return
-
     try:
-        values = browser_value_to_python(browser.getLoginFormValues())
-    except Exception:
-        return
+        document = browser_document()
+        if document is None:
+            raise RuntimeError
 
-    if isinstance(values, dict):
-        username = values.get("username")
-        password = values.get("password")
-    else:
-        username = getattr(values, "username", None)
-        password = getattr(values, "password", None)
+        username_input = document.getElementById("loginPanelUsername")
+        password_input = document.getElementById("loginPanelPassword")
+        username = browser_value_to_python(getattr(username_input, "value", None))
+        password = browser_value_to_python(getattr(password_input, "value", None))
+    except Exception:
+        browser = browser_window()
+        if browser is None:
+            return
+        try:
+            values = browser_value_to_python(browser.getLoginFormValues())
+        except Exception:
+            return
+
+        if isinstance(values, dict):
+            username = values.get("username")
+            password = values.get("password")
+        else:
+            username = getattr(values, "username", None)
+            password = getattr(values, "password", None)
 
     if username is not None:
         login_username = str(username)[:22]
@@ -344,14 +362,22 @@ def hide_web_game_input():
 def sync_web_game_input_value():
     global game_input
 
-    browser = browser_window()
-    if browser is None:
-        return
-
     try:
-        value = browser_value_to_python(browser.getGameInputValue())
+        document = browser_document()
+        if document is None:
+            raise RuntimeError
+
+        game_input_el = document.getElementById("gameTypingInput")
+        value = browser_value_to_python(getattr(game_input_el, "value", None))
     except Exception:
-        return
+        browser = browser_window()
+        if browser is None:
+            return
+
+        try:
+            value = browser_value_to_python(browser.getGameInputValue())
+        except Exception:
+            return
 
     if value is not None:
         game_input = str(value)[:120]
@@ -420,6 +446,22 @@ def sync_web_overlay_visibility():
 
 
 def pop_web_overlay_action():
+    try:
+        document = browser_document()
+        if document is None:
+            raise RuntimeError
+
+        action_field = document.getElementById("overlayActionValue")
+        action = browser_value_to_python(getattr(action_field, "value", None))
+        if action:
+            try:
+                action_field.value = ""
+            except Exception:
+                pass
+            return str(action).strip().lower()
+    except Exception:
+        pass
+
     browser = browser_window()
     if browser is None:
         return None
