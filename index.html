@@ -59,6 +59,97 @@ function show_infobox() {
 
 globalThis.__canvas_resized = () => {}
 
+const APP_WIDTH = 430
+const APP_HEIGHT = 760
+
+function appRect() {
+    const canvasEl = document.getElementById("canvas")
+    return canvasEl ? canvasEl.getBoundingClientRect() : null
+}
+
+function scaleRect(x, y, width, height) {
+    const rect = appRect()
+    if (!rect) {
+        return null
+    }
+
+    const scaleX = rect.width / APP_WIDTH
+    const scaleY = rect.height / APP_HEIGHT
+
+    return {
+        left: rect.left + x * scaleX,
+        top: rect.top + y * scaleY,
+        width: width * scaleX,
+        height: height * scaleY,
+    }
+}
+
+function placeElement(element, x, y, width, height) {
+    const box = scaleRect(x, y, width, height)
+    if (!box || !element) {
+        return
+    }
+
+    element.style.left = `${box.left}px`
+    element.style.top = `${box.top}px`
+    element.style.width = `${box.width}px`
+    element.style.height = `${box.height}px`
+}
+
+function updateOverlayLayout() {
+    placeElement(document.getElementById("loginUsernameInput"), 55, 238, 320, 56)
+    placeElement(document.getElementById("loginPasswordInput"), 55, 334, 320, 56)
+    placeElement(document.getElementById("gameTypingInput"), 45, 500, 340, 84)
+}
+
+function showLoginInputs(username = "", password = "") {
+    const overlay = document.getElementById("mobileLoginOverlay")
+    const usernameInput = document.getElementById("loginUsernameInput")
+    const passwordInput = document.getElementById("loginPasswordInput")
+
+    usernameInput.value = username ?? ""
+    passwordInput.value = password ?? ""
+    overlay.hidden = false
+    updateOverlayLayout()
+}
+
+function hideLoginInputs() {
+    document.getElementById("mobileLoginOverlay").hidden = true
+}
+
+function getLoginFormValues() {
+    return {
+        username: document.getElementById("loginUsernameInput").value,
+        password: document.getElementById("loginPasswordInput").value,
+    }
+}
+
+function showGameInput(value = "") {
+    const overlay = document.getElementById("mobileGameOverlay")
+    const input = document.getElementById("gameTypingInput")
+    input.value = value ?? ""
+    overlay.hidden = false
+    updateOverlayLayout()
+}
+
+function hideGameInput() {
+    document.getElementById("mobileGameOverlay").hidden = true
+}
+
+function getGameInputValue() {
+    return document.getElementById("gameTypingInput").value
+}
+
+function setGameInputValue(value = "") {
+    document.getElementById("gameTypingInput").value = value ?? ""
+}
+
+function popOverlayAction() {
+    const action = window.overlayAction ?? null
+    window.overlayAction = null
+    return action
+}
+
 async function custom_onload(debug_hidden) {
     pyconsole.hidden = debug_hidden
     system.hidden = debug_hidden
@@ -73,6 +164,34 @@ async function custom_onload(debug_hidden) {
         canvasEl.addEventListener("touchstart", () => canvasEl.focus(), { passive: true })
     }
 
+    const usernameInput = document.getElementById("loginUsernameInput")
+    const passwordInput = document.getElementById("loginPasswordInput")
+    const gameTypingInput = document.getElementById("gameTypingInput")
+
+    usernameInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault()
+            passwordInput.focus()
+        }
+    })
+
+    passwordInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault()
+            window.overlayAction = "login"
+        }
+    })
+
+    gameTypingInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault()
+            window.overlayAction = "submit"
+        }
+    })
+
+    window.addEventListener("resize", updateOverlayLayout)
+    window.addEventListener("orientationchange", updateOverlayLayout)
+    updateOverlayLayout()
     show_infobox()
 }
 
@@ -153,6 +272,33 @@ function custom_postrun() {}
             right: 10px;
             border: 1px solid black;
         }
+
+        .mobile-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        .mobile-input {
+            position: fixed;
+            pointer-events: auto;
+            border: 0;
+            border-radius: 16px;
+            padding: 0 18px;
+            font-size: 17px;
+            font-family: Verdana, sans-serif;
+            color: #0f1826;
+            background: rgba(245, 248, 252, 0.96);
+            box-shadow: 0 4px 12px rgba(14, 23, 35, 0.06);
+            outline: 2px solid rgba(72, 141, 255, 0.18);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .mobile-input::placeholder {
+            color: #a5afbd;
+        }
     </style>
 
     <script src="https://pygame-web.github.io/cdn/0.9.3//browserfs.min.js"></script>
@@ -186,6 +332,13 @@ height="760px"
 
     <div id="infobox">Loading, please wait ...</div>
     <div id="html"></div>
+    <div id="mobileLoginOverlay" class="mobile-overlay" hidden>
+        <input id="loginUsernameInput" class="mobile-input" type="text" inputmode="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Enter username">
+        <input id="loginPasswordInput" class="mobile-input" type="password" inputmode="text" autocomplete="current-password" autocapitalize="none" spellcheck="false" placeholder="Enter password">
+    </div>
+    <div id="mobileGameOverlay" class="mobile-overlay" hidden>
+        <input id="gameTypingInput" class="mobile-input" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Start typing here">
+    </div>
 
     <div id="crt" class="bottomright">
         <div id="system" hidden>

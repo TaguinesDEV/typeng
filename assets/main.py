@@ -82,6 +82,8 @@ game_end_tick = 0
 banner_text = ""
 banner_color = MINT_DARK
 banner_until = 0
+web_login_inputs_visible = False
+web_game_input_visible = False
 
 
 def load_accounts():
@@ -138,6 +140,151 @@ def open_url(url):
         webbrowser.open(url)
     except Exception:
         set_banner("Could not open the install link.", RED_DARK)
+
+
+def browser_window():
+    try:
+        browser_platform = __import__("platform")
+    except Exception:
+        return None
+
+    return getattr(browser_platform, "window", None)
+
+
+def show_web_login_inputs():
+    global web_login_inputs_visible
+
+    browser = browser_window()
+    if browser is None:
+        return
+
+    try:
+        browser.showLoginInputs(login_username, login_password)
+        web_login_inputs_visible = True
+    except Exception:
+        web_login_inputs_visible = False
+
+
+def hide_web_login_inputs():
+    global web_login_inputs_visible
+
+    browser = browser_window()
+    if browser is None:
+        return
+
+    try:
+        browser.hideLoginInputs()
+    except Exception:
+        pass
+    web_login_inputs_visible = False
+
+
+def sync_web_login_form_values():
+    global login_username, login_password
+
+    browser = browser_window()
+    if browser is None:
+        return
+
+    try:
+        values = browser.getLoginFormValues()
+    except Exception:
+        return
+
+    username = getattr(values, "username", None)
+    password = getattr(values, "password", None)
+
+    if username is not None:
+        login_username = str(username)[:22]
+    if password is not None:
+        login_password = str(password)[:30]
+
+
+def show_web_game_input():
+    global web_game_input_visible
+
+    browser = browser_window()
+    if browser is None:
+        return
+
+    try:
+        browser.showGameInput(game_input)
+        web_game_input_visible = True
+    except Exception:
+        web_game_input_visible = False
+
+
+def hide_web_game_input():
+    global web_game_input_visible
+
+    browser = browser_window()
+    if browser is None:
+        return
+
+    try:
+        browser.hideGameInput()
+    except Exception:
+        pass
+    web_game_input_visible = False
+
+
+def sync_web_game_input_value():
+    global game_input
+
+    browser = browser_window()
+    if browser is None:
+        return
+
+    try:
+        value = browser.getGameInputValue()
+    except Exception:
+        return
+
+    if value is not None:
+        game_input = str(value)[:120]
+
+
+def set_web_game_input_value(value):
+    browser = browser_window()
+    if browser is None:
+        return
+
+    try:
+        browser.setGameInputValue(value)
+    except Exception:
+        return
+
+
+def sync_web_overlay_visibility():
+    if browser_window() is None:
+        return
+
+    if screen == SCREEN_LOGIN:
+        if not web_login_inputs_visible:
+            show_web_login_inputs()
+        if web_game_input_visible:
+            hide_web_game_input()
+    elif screen == SCREEN_GAME:
+        if web_login_inputs_visible:
+            hide_web_login_inputs()
+        if not web_game_input_visible:
+            show_web_game_input()
+    else:
+        if web_login_inputs_visible:
+            hide_web_login_inputs()
+        if web_game_input_visible:
+            hide_web_game_input()
+
+
+def pop_web_overlay_action():
+    browser = browser_window()
+    if browser is None:
+        return None
+
+    try:
+        return browser.popOverlayAction()
+    except Exception:
+        return None
 
 
 def rounded_rect(rect, color, radius=18, border_color=None, border_width=0):
@@ -284,10 +431,13 @@ def choose_phrase():
     pool = [phrase for phrase in PHRASES if phrase != game_phrase]
     game_phrase = random.choice(pool or PHRASES)
     game_input = ""
+    set_web_game_input_value(game_input)
 
 
 def score_submission():
     global game_score, game_mistakes
+
+    sync_web_game_input_value()
 
     typed = game_input.strip()
     if not typed:
@@ -615,8 +765,10 @@ def handle_login_pointer(position):
     elif buttons["password"].collidepoint(position):
         login_focus = "password"
     elif buttons["login"].collidepoint(position):
+        sync_web_login_form_values()
         login_user()
     elif buttons["register"].collidepoint(position):
+        sync_web_login_form_values()
         register_user()
     elif buttons["ranking"].collidepoint(position):
         screen = SCREEN_RANKING
@@ -672,6 +824,7 @@ def handle_game_key(event):
 def handle_game_pointer(position):
     buttons = game_buttons()
     if buttons["submit"].collidepoint(position):
+        sync_web_game_input_value()
         score_submission()
     elif buttons["skip"].collidepoint(position):
         choose_phrase()
@@ -706,6 +859,20 @@ async def main():
         now_tick = pygame.time.get_ticks()
         clear_banner_if_needed(now_tick)
         update_screen_state()
+        sync_web_overlay_visibility()
+
+        if screen == SCREEN_LOGIN:
+            sync_web_login_form_values()
+        elif screen == SCREEN_GAME:
+            sync_web_game_input_value()
+
+        web_action = pop_web_overlay_action()
+        if web_action == "login" and screen == SCREEN_LOGIN:
+            sync_web_login_form_values()
+            login_user()
+        elif web_action == "submit" and screen == SCREEN_GAME:
+            sync_web_game_input_value()
+            score_submission()
 
         if screen in (SCREEN_LOGIN, SCREEN_GAME):
             pygame.key.start_text_input()
