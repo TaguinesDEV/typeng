@@ -82,7 +82,7 @@ game_end_tick = 0
 banner_text = ""
 banner_color = MINT_DARK
 banner_until = 0
-web_login_inputs_visible = False
+web_login_panel_visible = False
 web_game_input_visible = False
 
 
@@ -151,32 +151,32 @@ def browser_window():
     return getattr(browser_platform, "window", None)
 
 
-def show_web_login_inputs():
-    global web_login_inputs_visible
+def show_web_login_panel():
+    global web_login_panel_visible
 
     browser = browser_window()
     if browser is None:
         return
 
     try:
-        browser.showLoginInputs(login_username, login_password)
-        web_login_inputs_visible = True
+        browser.showLoginPanel(login_username, login_password, banner_text)
+        web_login_panel_visible = True
     except Exception:
-        web_login_inputs_visible = False
+        web_login_panel_visible = False
 
 
-def hide_web_login_inputs():
-    global web_login_inputs_visible
+def hide_web_login_panel():
+    global web_login_panel_visible
 
     browser = browser_window()
     if browser is None:
         return
 
     try:
-        browser.hideLoginInputs()
+        browser.hideLoginPanel()
     except Exception:
         pass
-    web_login_inputs_visible = False
+    web_login_panel_visible = False
 
 
 def sync_web_login_form_values():
@@ -198,6 +198,17 @@ def sync_web_login_form_values():
         login_username = str(username)[:22]
     if password is not None:
         login_password = str(password)[:30]
+
+
+def sync_web_login_message():
+    browser = browser_window()
+    if browser is None:
+        return
+
+    try:
+        browser.setLoginMessage(banner_text)
+    except Exception:
+        return
 
 
 def show_web_game_input():
@@ -260,18 +271,18 @@ def sync_web_overlay_visibility():
         return
 
     if screen == SCREEN_LOGIN:
-        if not web_login_inputs_visible:
-            show_web_login_inputs()
+        if not web_login_panel_visible:
+            show_web_login_panel()
         if web_game_input_visible:
             hide_web_game_input()
     elif screen == SCREEN_GAME:
-        if web_login_inputs_visible:
-            hide_web_login_inputs()
+        if web_login_panel_visible:
+            hide_web_login_panel()
         if not web_game_input_visible:
             show_web_game_input()
     else:
-        if web_login_inputs_visible:
-            hide_web_login_inputs()
+        if web_login_panel_visible:
+            hide_web_login_panel()
         if web_game_input_visible:
             hide_web_game_input()
 
@@ -590,9 +601,13 @@ def draw_banner():
 
 
 def draw_login():
-    buttons = login_buttons()
     draw_background()
-    show_canvas_text = browser_window() is None
+
+    if browser_window() is not None:
+        return
+
+    buttons = login_buttons()
+    show_canvas_text = True
 
     draw_center_text("Typing Master", title_font, INK, 92)
     draw_center_text("Log in or register to save your best typing scores.", small_font, TEXT_MUTED, 144)
@@ -871,6 +886,7 @@ async def main():
 
         if screen == SCREEN_LOGIN:
             sync_web_login_form_values()
+            sync_web_login_message()
         elif screen == SCREEN_GAME:
             sync_web_game_input_value()
 
@@ -878,6 +894,13 @@ async def main():
         if web_action == "login" and screen == SCREEN_LOGIN:
             sync_web_login_form_values()
             login_user()
+        elif web_action == "register" and screen == SCREEN_LOGIN:
+            sync_web_login_form_values()
+            register_user()
+        elif web_action == "ranking" and screen == SCREEN_LOGIN:
+            screen = SCREEN_RANKING
+        elif web_action == "install" and screen == SCREEN_LOGIN:
+            open_url(INSTALL_APP_URL)
         elif web_action == "submit" and screen == SCREEN_GAME:
             sync_web_game_input_value()
             score_submission()

@@ -97,31 +97,51 @@ function placeElement(element, x, y, width, height) {
 }
 
 function updateOverlayLayout() {
-    placeElement(document.getElementById("loginUsernameInput"), 55, 238, 320, 56)
-    placeElement(document.getElementById("loginPasswordInput"), 55, 334, 320, 56)
     placeElement(document.getElementById("gameTypingInput"), 45, 500, 340, 84)
 }
 
-function showLoginInputs(username = "", password = "") {
-    const overlay = document.getElementById("mobileLoginOverlay")
-    const usernameInput = document.getElementById("loginUsernameInput")
-    const passwordInput = document.getElementById("loginPasswordInput")
-
+function showLoginPanel(username = "", password = "", message = "") {
+    const overlay = document.getElementById("mobileLoginPanel")
+    const usernameInput = document.getElementById("loginPanelUsername")
+    const passwordInput = document.getElementById("loginPanelPassword")
+    const messageBox = document.getElementById("loginPanelMessage")
     usernameInput.value = username ?? ""
     passwordInput.value = password ?? ""
+    messageBox.textContent = message ?? ""
     overlay.hidden = false
-    updateOverlayLayout()
+    document.body.classList.add("login-panel-open")
+    const canvasEl = document.getElementById("canvas")
+    const canvas3dEl = document.getElementById("canvas3d")
+    if (canvasEl) {
+        canvasEl.style.visibility = "hidden"
+    }
+    if (canvas3dEl) {
+        canvas3dEl.style.visibility = "hidden"
+    }
 }
 
-function hideLoginInputs() {
-    document.getElementById("mobileLoginOverlay").hidden = true
+function hideLoginPanel() {
+    document.getElementById("mobileLoginPanel").hidden = true
+    document.body.classList.remove("login-panel-open")
+    const canvasEl = document.getElementById("canvas")
+    const canvas3dEl = document.getElementById("canvas3d")
+    if (canvasEl) {
+        canvasEl.style.visibility = "visible"
+    }
+    if (canvas3dEl) {
+        canvas3dEl.style.visibility = "hidden"
+    }
 }
 
 function getLoginFormValues() {
     return {
-        username: document.getElementById("loginUsernameInput").value,
-        password: document.getElementById("loginPasswordInput").value,
+        username: document.getElementById("loginPanelUsername").value,
+        password: document.getElementById("loginPanelPassword").value,
     }
+}
+
+function setLoginMessage(message = "") {
+    document.getElementById("loginPanelMessage").textContent = message ?? ""
 }
 
 function showGameInput(value = "") {
@@ -164,9 +184,13 @@ async function custom_onload(debug_hidden) {
         canvasEl.addEventListener("touchstart", () => canvasEl.focus(), { passive: true })
     }
 
-    const usernameInput = document.getElementById("loginUsernameInput")
-    const passwordInput = document.getElementById("loginPasswordInput")
+    const usernameInput = document.getElementById("loginPanelUsername")
+    const passwordInput = document.getElementById("loginPanelPassword")
     const gameTypingInput = document.getElementById("gameTypingInput")
+    const loginButton = document.getElementById("loginPanelLogin")
+    const registerButton = document.getElementById("loginPanelRegister")
+    const rankingButton = document.getElementById("loginPanelRanking")
+    const installButton = document.getElementById("loginPanelInstall")
 
     usernameInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -180,6 +204,22 @@ async function custom_onload(debug_hidden) {
             event.preventDefault()
             window.overlayAction = "login"
         }
+    })
+
+    loginButton.addEventListener("click", () => {
+        window.overlayAction = "login"
+    })
+
+    registerButton.addEventListener("click", () => {
+        window.overlayAction = "register"
+    })
+
+    rankingButton.addEventListener("click", () => {
+        window.overlayAction = "ranking"
+    })
+
+    installButton.addEventListener("click", () => {
+        window.overlayAction = "install"
     })
 
     gameTypingInput.addEventListener("keydown", (event) => {
@@ -240,6 +280,7 @@ function custom_postrun() {}
             margin: 0;
             padding: 0;
             background: linear-gradient(180deg, #d9ebff 0%, #f7fbff 100%);
+            overflow: hidden;
         }
 
         canvas.emscripten {
@@ -278,6 +319,125 @@ function custom_postrun() {}
             inset: 0;
             pointer-events: none;
             z-index: 40;
+        }
+
+        .login-panel-open {
+            overflow: auto;
+        }
+
+        .web-login {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            background:
+                radial-gradient(circle at 15% 28%, rgba(255, 255, 255, 0.34) 0, rgba(255, 255, 255, 0.34) 120px, transparent 121px),
+                linear-gradient(180deg, #d9ebff 0%, #f7fbff 100%);
+            padding: 88px 20px 28px;
+        }
+
+        .web-login-inner {
+            width: min(100%, 420px);
+            margin: 0 auto;
+        }
+
+        .web-login-title {
+            margin: 0;
+            color: #0f1826;
+            font-size: clamp(2rem, 8vw, 3.6rem);
+            line-height: 0.98;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .web-login-subtitle {
+            margin: 10px 0 26px;
+            color: #617080;
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .web-login-card {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(218, 228, 240, 0.9);
+            border-radius: 28px;
+            box-shadow: 0 10px 28px rgba(14, 23, 35, 0.18);
+            padding: 26px 22px 22px;
+        }
+
+        .web-login-label {
+            display: block;
+            margin: 0 0 10px;
+            color: #617080;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .web-login-field {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0 0 18px;
+            border: 2px solid #d5e3f3;
+            border-radius: 18px;
+            padding: 16px 18px;
+            font-size: 18px;
+            font-family: Verdana, sans-serif;
+            color: #0f1826;
+            background: #f5f8fc;
+            box-shadow: none;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .web-login-field:focus {
+            border-color: #488dff;
+            background: #f8fbff;
+        }
+
+        .web-login-message {
+            min-height: 22px;
+            margin: 2px 0 12px;
+            color: #174ca8;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .web-login-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 8px;
+        }
+
+        .web-login-button {
+            border: 0;
+            border-radius: 18px;
+            padding: 15px 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: Verdana, sans-serif;
+            box-shadow: 0 5px 14px rgba(14, 23, 35, 0.18);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .web-login-button.login { background: #3b82f6; }
+        .web-login-button.register { background: #3db77e; }
+        .web-login-button.ranking { background: #405163; }
+        .web-login-button.install { background: #f59e0b; }
+
+        .web-login-tip {
+            margin: 18px 2px 0;
+            color: #617080;
+            font-size: 14px;
+            line-height: 1.5;
+            font-weight: 600;
         }
 
         .mobile-input {
@@ -339,9 +499,25 @@ height="760px"
 
     <div id="infobox">Loading, please wait ...</div>
     <div id="html"></div>
-    <div id="mobileLoginOverlay" class="mobile-overlay" hidden>
-        <input id="loginUsernameInput" class="mobile-input" type="text" inputmode="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Enter username">
-        <input id="loginPasswordInput" class="mobile-input" type="password" inputmode="text" autocomplete="current-password" autocapitalize="none" spellcheck="false" placeholder="Enter password">
+    <div id="mobileLoginPanel" class="web-login" hidden>
+        <div class="web-login-inner">
+            <h1 class="web-login-title">Typing Master</h1>
+            <p class="web-login-subtitle">Log in or register to save your best typing scores.</p>
+            <div class="web-login-card">
+                <label class="web-login-label" for="loginPanelUsername">USERNAME</label>
+                <input id="loginPanelUsername" class="web-login-field" type="text" inputmode="text" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="Enter username">
+                <label class="web-login-label" for="loginPanelPassword">PASSWORD</label>
+                <input id="loginPanelPassword" class="web-login-field" type="password" inputmode="text" autocomplete="current-password" autocapitalize="none" spellcheck="false" placeholder="Enter password">
+                <div id="loginPanelMessage" class="web-login-message"></div>
+                <div class="web-login-grid">
+                    <button id="loginPanelLogin" class="web-login-button login" type="button">LOG IN</button>
+                    <button id="loginPanelRegister" class="web-login-button register" type="button">REGISTER</button>
+                    <button id="loginPanelRanking" class="web-login-button ranking" type="button">RANKING</button>
+                    <button id="loginPanelInstall" class="web-login-button install" type="button">INSTALL APP</button>
+                </div>
+                <p class="web-login-tip">Tip: tap the fields and use your phone keyboard normally.</p>
+            </div>
+        </div>
     </div>
     <div id="mobileGameOverlay" class="mobile-overlay" hidden>
         <input id="gameTypingInput" class="mobile-input" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Start typing here">
