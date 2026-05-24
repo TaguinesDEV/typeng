@@ -1,5 +1,6 @@
 .sixth/
 .vscode/
+.tmp_lawlaw1/
 __pycache__/
 *.py[cod]
 accounts.json

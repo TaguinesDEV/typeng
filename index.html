@@ -1,0 +1,224 @@
+<html lang="en-us"><script src="https://pygame-web.github.io/cdn/0.9.3/pythons.js" type=module id="site" data-python="python3.12" data-LINES=40 data-COLUMNS=120 data-os="vtx,snd,gui" async defer>#<!--
+
+print("""
+Loading Typing Master
+    Runtime : pygame-web / pygbag
+    Python  : 3.12
+    Entry   : assets/main.py
+""")
+
+import asyncio
+
+
+async def custom_site():
+    import platform
+
+    platform.document.body.style.background = "#cfe4ff"
+    platform.document.body.style.margin = "0"
+    platform.window.transfer.hidden = True
+    platform.window.canvas.style.visibility = "visible"
+
+    while embed.counter() < 0:
+        await asyncio.sleep(0.1)
+
+    await TopLevel_async_handler.start_toplevel(platform.shell, console=window.python.config.debug)
+    await shell.source("assets/main.py")
+
+    platform.window.infobox.style.display = "none"
+    platform.window.config.gui_divider = 1
+    platform.window.window_resize()
+
+
+asyncio.run(custom_site())
+
+# --></script><head><script type="application/javascript">
+config = {
+    xtermjs: "1",
+    _sdl2: "canvas",
+    user_canvas: 0,
+    user_canvas_managed: 0,
+    gui_divider: 2,
+    ume_block: 1,
+    can_close: 0,
+    gui_debug: 2,
+    cdn: "https://pygame-web.github.io/cdn/0.9.3/",
+    autorun: 0,
+    PYBUILD: "3.12",
+    fb_ar: 0.57,
+    fb_width: "430",
+    fb_height: "760"
+}
+
+function show_infobox() {
+    infobox.style.display = "block";
+    const w = infobox.offsetWidth;
+    const h = infobox.offsetHeight;
+    infobox.style.left = (window.innerWidth - w) / 2 + "px";
+    infobox.style.top = (window.innerHeight - h) / 2 + "px";
+}
+
+globalThis.__canvas_resized = () => {}
+
+async function custom_onload(debug_hidden) {
+    pyconsole.hidden = debug_hidden
+    system.hidden = debug_hidden
+    transfer.hidden = debug_hidden
+    info.hidden = debug_hidden
+    box.hidden = debug_hidden
+
+    const canvasEl = document.getElementById("canvas")
+    if (canvasEl) {
+        canvasEl.style.outline = "none"
+        canvasEl.addEventListener("pointerdown", () => canvasEl.focus())
+        canvasEl.addEventListener("touchstart", () => canvasEl.focus(), { passive: true })
+    }
+
+    show_infobox()
+}
+
+function custom_prerun() {}
+function custom_postrun() {}
+</script>
+
+    <title>Typing Master</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="height=device-height, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <style>
+        #status {
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 20px;
+            margin-left: 30px;
+            font-weight: bold;
+            color: rgb(56, 79, 109);
+            font-family: Verdana, sans-serif;
+        }
+
+        #progress {
+            height: 20px;
+            width: 300px;
+        }
+
+        #infobox {
+            position: fixed;
+            background: rgba(37, 99, 235, 0.96);
+            color: white;
+            font-family: Verdana, sans-serif;
+            font-weight: bold;
+            padding: 12px 22px;
+            border-radius: 999px;
+            z-index: 999999;
+            box-shadow: 0 14px 40px rgba(18, 42, 72, 0.25);
+        }
+
+        body {
+            font-family: Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(180deg, #d9ebff 0%, #f7fbff 100%);
+        }
+
+        canvas.emscripten {
+            border: 0;
+            background-color: transparent;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            padding: 0;
+            margin: 0 auto;
+            position: absolute;
+            inset: 0;
+        }
+
+        .bottomright {
+            position: absolute;
+            top: 40%;
+            right: 0;
+        }
+
+        .trinfo {
+            position: relative;
+            right: 0;
+            border: 1px solid black;
+        }
+
+        .framed {
+            position: relative;
+            top: 150px;
+            right: 10px;
+            border: 1px solid black;
+        }
+    </style>
+
+    <script src="https://pygame-web.github.io/cdn/0.9.3//browserfs.min.js"></script>
+
+</head>
+
+<body>
+
+    <div id="transfer" align=center>
+        <div class="emscripten" id="status">Loading Typing Master...</div>
+        <div class="emscripten">
+            <progress value="0" max="100" id="progress"></progress>
+        </div>
+    </div>
+
+    <canvas class="emscripten" id="canvas"
+width="1px"
+height="1px"
+    oncontextmenu="event.preventDefault()"
+    onpointerdown="this.focus()"
+    ontouchstart="this.focus()"
+    tabindex="0"
+    style="touch-action: manipulation; outline: none;">
+    </canvas>
+
+    <canvas class="emscripten" id="canvas3d"
+width="430px"
+height="760px"
+    oncontextmenu="event.preventDefault()" tabindex="0" hidden>
+    </canvas>
+
+    <div id="infobox">Loading, please wait ...</div>
+    <div id="html"></div>
+
+    <div id="crt" class="bottomright">
+        <div id="system" hidden>
+            <div id="level">(battery level unknown)</div>
+            <div id="stateBattery">(charging state unknown)</div>
+        </div>
+
+        <div id="box" hidden=true>
+            <div id="info" class="trinfo"></div>
+            <iframe id="iframe" class="framed" name="iframe"
+width="470px" height="90%"
+allowtransparency="true"
+frameborder="1"
+                allowfullscreen="true"
+                webkitallowfullscreen="true"
+                msallowfullscreen="true"
+                mozallowfullscreen="true"
+                sandbox="allow-same-origin allow-top-navigation allow-scripts allow-pointer-lock"
+                allow="autoplay; fullscreen *; geolocation; microphone; camera; midi; monetization; xr-spatial-tracking; gamepad; gyroscope; accelerometer; xr; cross-origin-isolated"
+                src="https://pygame-web.github.io/cdn/0.9.3/empty.html"
+                scrolling="yes">
+            </iframe>
+        </div>
+    </div>
+
+    <div id="dlg" hidden>
+        <input type="file" id="dlg_multifile" multiple accept="image/*">
+        <label for="dlg_multifile">Select files</label>
+    </div>
+
+    <div id="pyconsole">
+        <div id="terminal" tabIndex=1 align="left"></div>
+    </div>
+
+</body>
+</html>
