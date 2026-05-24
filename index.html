@@ -140,6 +140,37 @@ function hideLoginPanel() {
     }
 }
 
+function showMenuPanel(username = "", bestScore = "0", gamesPlayed = "0", message = "") {
+    const overlay = document.getElementById("mobileMenuPanel")
+    document.getElementById("menuPanelUsername").textContent = username ?? ""
+    document.getElementById("menuPanelBestScore").textContent = bestScore ?? "0"
+    document.getElementById("menuPanelGamesPlayed").textContent = gamesPlayed ?? "0"
+    document.getElementById("menuPanelMessage").textContent = message ?? ""
+    overlay.hidden = false
+    document.body.classList.add("login-panel-open")
+    const canvasEl = document.getElementById("canvas")
+    const canvas3dEl = document.getElementById("canvas3d")
+    if (canvasEl) {
+        canvasEl.style.visibility = "hidden"
+    }
+    if (canvas3dEl) {
+        canvas3dEl.style.visibility = "hidden"
+    }
+}
+
+function hideMenuPanel() {
+    document.getElementById("mobileMenuPanel").hidden = true
+    document.body.classList.remove("login-panel-open")
+    const canvasEl = document.getElementById("canvas")
+    const canvas3dEl = document.getElementById("canvas3d")
+    if (canvasEl) {
+        canvasEl.style.visibility = "visible"
+    }
+    if (canvas3dEl) {
+        canvas3dEl.style.visibility = "hidden"
+    }
+}
+
 function getLoginFormValues() {
     return {
         username: document.getElementById("loginPanelUsername").value,
@@ -431,6 +462,10 @@ async function custom_onload(debug_hidden) {
     const registerButton = document.getElementById("loginPanelRegister")
     const rankingButton = document.getElementById("loginPanelRanking")
     const installButton = document.getElementById("loginPanelInstall")
+    const menuStartButton = document.getElementById("menuPanelStart")
+    const menuRankingButton = document.getElementById("menuPanelRanking")
+    const menuLogoutButton = document.getElementById("menuPanelLogout")
+    const menuInstallButton = document.getElementById("menuPanelInstall")
     const installNowButton = document.getElementById("installNowButton")
     const closeInstallButton = document.getElementById("closeInstallModal")
     const installModal = document.getElementById("installModal")
@@ -461,6 +496,22 @@ async function custom_onload(debug_hidden) {
     })
 
     bindButtonPress(installButton, () => {
+        requestInstallApp()
+    })
+
+    bindButtonPress(menuStartButton, (event) => {
+        submitOverlayAction("start", event)
+    })
+
+    bindButtonPress(menuRankingButton, (event) => {
+        submitOverlayAction("menu-ranking", event)
+    })
+
+    bindButtonPress(menuLogoutButton, (event) => {
+        submitOverlayAction("logout", event)
+    })
+
+    bindButtonPress(menuInstallButton, () => {
         requestInstallApp()
     })
 
@@ -651,6 +702,34 @@ function custom_postrun() {}
             border-radius: 28px;
             box-shadow: 0 10px 28px rgba(14, 23, 35, 0.18);
             padding: 26px 22px 22px;
+        }
+
+        .web-menu-stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin: 6px 0 18px;
+        }
+
+        .web-menu-stat {
+            border-radius: 20px;
+            border: 1px solid rgba(218, 228, 240, 0.9);
+            background: #f5f8fc;
+            padding: 14px 16px;
+        }
+
+        .web-menu-stat-label {
+            margin: 0;
+            color: #617080;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .web-menu-stat-value {
+            margin: 8px 0 0;
+            color: #0f1826;
+            font-size: 24px;
+            font-weight: 700;
         }
 
         .web-login-label {
@@ -873,6 +952,31 @@ height="760px"
                     <button id="loginPanelInstall" class="web-login-button install" type="button" onclick="return openInstallFromButton(event)" ontouchend="return openInstallFromButton(event)" onpointerup="return openInstallFromButton(event)">INSTALL APP</button>
                 </div>
                 <p class="web-login-tip">Tip: tap the fields and use your phone keyboard normally.</p>
+            </div>
+        </div>
+    </div>
+    <div id="mobileMenuPanel" class="web-login" hidden>
+        <div class="web-login-inner">
+            <h1 class="web-login-title">Welcome</h1>
+            <p id="menuPanelUsername" class="web-login-subtitle"></p>
+            <div class="web-login-card">
+                <div class="web-menu-stats">
+                    <div class="web-menu-stat">
+                        <p class="web-menu-stat-label">BEST SCORE</p>
+                        <p id="menuPanelBestScore" class="web-menu-stat-value">0</p>
+                    </div>
+                    <div class="web-menu-stat">
+                        <p class="web-menu-stat-label">GAMES PLAYED</p>
+                        <p id="menuPanelGamesPlayed" class="web-menu-stat-value">0</p>
+                    </div>
+                </div>
+                <div id="menuPanelMessage" class="web-login-message"></div>
+                <div class="web-login-grid">
+                    <button id="menuPanelStart" class="web-login-button login" type="button" onclick="return submitOverlayAction('start', event)" ontouchend="return submitOverlayAction('start', event)" onpointerup="return submitOverlayAction('start', event)">START</button>
+                    <button id="menuPanelRanking" class="web-login-button register" type="button" onclick="return submitOverlayAction('menu-ranking', event)" ontouchend="return submitOverlayAction('menu-ranking', event)" onpointerup="return submitOverlayAction('menu-ranking', event)">RANKING</button>
+                    <button id="menuPanelLogout" class="web-login-button ranking" type="button" onclick="return submitOverlayAction('logout', event)" ontouchend="return submitOverlayAction('logout', event)" onpointerup="return submitOverlayAction('logout', event)">LOG OUT</button>
+                    <button id="menuPanelInstall" class="web-login-button install" type="button" onclick="return openInstallFromButton(event)" ontouchend="return openInstallFromButton(event)" onpointerup="return openInstallFromButton(event)">INSTALL APP</button>
+                </div>
             </div>
         </div>
     </div>

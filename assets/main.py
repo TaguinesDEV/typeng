@@ -82,6 +82,7 @@ banner_text = ""
 banner_color = MINT_DARK
 banner_until = 0
 web_login_panel_visible = False
+web_menu_panel_visible = False
 web_game_input_visible = False
 
 
@@ -205,6 +206,39 @@ def hide_web_login_panel():
     web_login_panel_visible = False
 
 
+def show_web_menu_panel():
+    global web_menu_panel_visible
+
+    browser = browser_window()
+    if browser is None:
+        return
+
+    username = current_user.title() if current_user else ""
+    record = user_record(current_user) if current_user else {"best_score": 0, "history": []}
+    best_score = str(record.get("best_score", 0))
+    games_played = str(len(record.get("history", [])))
+
+    try:
+        browser.showMenuPanel(username, best_score, games_played, banner_text)
+        web_menu_panel_visible = True
+    except Exception:
+        web_menu_panel_visible = False
+
+
+def hide_web_menu_panel():
+    global web_menu_panel_visible
+
+    browser = browser_window()
+    if browser is None:
+        return
+
+    try:
+        browser.hideMenuPanel()
+    except Exception:
+        pass
+    web_menu_panel_visible = False
+
+
 def sync_web_login_form_values():
     global login_username, login_password
 
@@ -301,18 +335,31 @@ def sync_web_overlay_visibility():
         return
 
     if screen == SCREEN_LOGIN:
+        if web_menu_panel_visible:
+            hide_web_menu_panel()
         if not web_login_panel_visible:
             show_web_login_panel()
+        if web_game_input_visible:
+            hide_web_game_input()
+    elif screen == SCREEN_MENU:
+        if web_login_panel_visible:
+            hide_web_login_panel()
+        if not web_menu_panel_visible:
+            show_web_menu_panel()
         if web_game_input_visible:
             hide_web_game_input()
     elif screen == SCREEN_GAME:
         if web_login_panel_visible:
             hide_web_login_panel()
+        if web_menu_panel_visible:
+            hide_web_menu_panel()
         if not web_game_input_visible:
             show_web_game_input()
     else:
         if web_login_panel_visible:
             hide_web_login_panel()
+        if web_menu_panel_visible:
+            hide_web_menu_panel()
         if web_game_input_visible:
             hide_web_game_input()
 
@@ -702,8 +749,12 @@ def draw_login():
 
 
 def draw_menu():
-    buttons = menu_buttons()
     draw_background()
+
+    if browser_window() is not None:
+        return
+
+    buttons = menu_buttons()
 
     draw_center_text("Welcome", title_font, INK, 110)
     draw_center_text(current_user.title(), section_font, BLUE_DARK, 164)
@@ -939,6 +990,8 @@ async def main():
         if screen == SCREEN_LOGIN:
             sync_web_login_form_values()
             sync_web_login_message()
+        elif screen == SCREEN_MENU:
+            show_web_menu_panel()
         elif screen == SCREEN_GAME:
             sync_web_game_input_value()
 
@@ -951,6 +1004,12 @@ async def main():
             register_user()
         elif web_action == "ranking" and screen == SCREEN_LOGIN:
             screen = SCREEN_RANKING
+        elif web_action == "start" and screen == SCREEN_MENU:
+            start_game()
+        elif web_action == "menu-ranking" and screen == SCREEN_MENU:
+            screen = SCREEN_RANKING
+        elif web_action == "logout" and screen == SCREEN_MENU:
+            logout_user()
         elif web_action == "submit" and screen == SCREEN_GAME:
             sync_web_game_input_value()
             score_submission()
