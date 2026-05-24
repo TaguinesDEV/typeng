@@ -1080,7 +1080,7 @@ def update_screen_state():
 
 
 async def main():
-    global running
+    global running, screen
 
     while running:
         now_tick = pygame.time.get_ticks()
