@@ -271,6 +271,7 @@ async function custom_onload(debug_hidden) {
     const installButton = document.getElementById("loginPanelInstall")
     const installNowButton = document.getElementById("installNowButton")
     const closeInstallButton = document.getElementById("closeInstallModal")
+    const installModal = document.getElementById("installModal")
 
     usernameInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
@@ -308,6 +309,12 @@ async function custom_onload(debug_hidden) {
 
     closeInstallButton.addEventListener("click", () => {
         hideInstallModal()
+    })
+
+    installModal.addEventListener("click", (event) => {
+        if (event.target === installModal) {
+            hideInstallModal()
+        }
     })
 
     gameTypingInput.addEventListener("keydown", (event) => {
@@ -584,6 +591,10 @@ function custom_postrun() {}
             place-items: center;
             padding: 20px;
             background: rgba(15, 24, 38, 0.34);
+        }
+
+        .install-modal[hidden] {
+            display: none !important;
         }
 
         .install-modal-card {
