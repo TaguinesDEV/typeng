@@ -171,6 +171,10 @@ function submitOverlayAction(action, event) {
         event.stopPropagation()
     }
 
+    const actionField = document.getElementById("overlayActionValue")
+    if (actionField) {
+        actionField.value = action ?? ""
+    }
     window.overlayAction = action
     return false
 }
@@ -209,6 +213,18 @@ function popOverlayAction() {
     const action = window.overlayAction ?? null
     window.overlayAction = null
     return action
+}
+
+function getOverlayActionValue() {
+    const actionField = document.getElementById("overlayActionValue")
+    return actionField ? actionField.value : ""
+}
+
+function clearOverlayActionValue() {
+    const actionField = document.getElementById("overlayActionValue")
+    if (actionField) {
+        actionField.value = ""
+    }
 }
 
 function isStandaloneApp() {
@@ -769,6 +785,7 @@ height="760px"
 
     <div id="infobox">Loading, please wait ...</div>
     <div id="html"></div>
+    <input id="overlayActionValue" type="hidden" value="">
     <div id="mobileLoginPanel" class="web-login" hidden>
         <div class="web-login-inner">
             <h1 class="web-login-title">Typing Master</h1>

@@ -323,6 +323,19 @@ def pop_web_overlay_action():
         return None
 
     try:
+        action = browser_value_to_python(browser.getOverlayActionValue())
+    except Exception:
+        action = None
+
+    if action:
+        normalized = str(action).strip().lower()
+        try:
+            browser.clearOverlayActionValue()
+        except Exception:
+            pass
+        return normalized
+
+    try:
         action = browser_value_to_python(browser.popOverlayAction())
     except Exception:
         return None
