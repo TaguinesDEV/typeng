@@ -394,13 +394,35 @@ function isStandaloneApp() {
     return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true
 }
 
+function isIOSDevice() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent || "")
+}
+
+function isSafariOnIOS() {
+    const ua = navigator.userAgent || ""
+    const isIOS = isIOSDevice()
+    const isSafari = /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo|YaBrowser|Instagram|FBAN|FBAV|Line|Messenger/i.test(ua)
+    return isIOS && isSafari
+}
+
+function installButtonLabel() {
+    if (isSafariOnIOS()) {
+        return "DOWNLOAD FOR iPhone"
+    }
+    return "INSTALL APP"
+}
+
 function browserInstallInstructions() {
     const ua = navigator.userAgent || ""
-    const isIOS = /iPhone|iPad|iPod/i.test(ua)
+    const isIOS = isIOSDevice()
     const isMessenger = /Messenger/i.test(ua)
 
+    if (isSafariOnIOS()) {
+        return "Step 1: Tap Share in Safari.\nStep 2: Tap Add to Home Screen.\nStep 3: Tap Add to place Typing Master on your iPhone."
+    }
+
     if (isIOS) {
-        return "On iPhone, open this page in Safari, tap Share, then choose Add to Home Screen."
+        return "Open this page in Safari on iPhone, then tap Share and choose Add to Home Screen."
     }
 
     if (isMessenger) {
@@ -460,6 +482,13 @@ function setInstallModalState() {
     if (isStandaloneApp()) {
         title.textContent = "Already Installed"
         body.textContent = "Typing Master is already installed or opened like an app on this device."
+        action.hidden = true
+        return
+    }
+
+    if (isSafariOnIOS()) {
+        title.textContent = "Download For iPhone"
+        body.textContent = "This demo installs to your iPhone Home Screen.\n\nStep 1: Tap Share in Safari.\nStep 2: Tap Add to Home Screen.\nStep 3: Tap Add."
         action.hidden = true
         return
     }
@@ -530,6 +559,15 @@ async function custom_onload(debug_hidden) {
     const installNowButton = document.getElementById("installNowButton")
     const closeInstallButton = document.getElementById("closeInstallModal")
     const installModal = document.getElementById("installModal")
+    const loginInstallLabel = document.getElementById("loginPanelInstall")
+    const menuInstallLabel = document.getElementById("menuPanelInstall")
+
+    if (loginInstallLabel) {
+        loginInstallLabel.textContent = installButtonLabel()
+    }
+    if (menuInstallLabel) {
+        menuInstallLabel.textContent = installButtonLabel()
+    }
 
     usernameInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
