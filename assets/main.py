@@ -9,7 +9,6 @@ import pygame
 
 
 pygame.init()
-pygame.key.start_text_input()
 
 WIDTH = 430
 HEIGHT = 760
@@ -332,6 +331,10 @@ def pop_web_overlay_action():
         return None
 
     return str(action).strip().lower()
+
+
+def browser_uses_native_inputs():
+    return browser_window() is not None and screen in (SCREEN_LOGIN, SCREEN_GAME)
 
 
 def rounded_rect(rect, color, radius=18, border_color=None, border_width=0):
@@ -939,7 +942,7 @@ async def main():
             sync_web_game_input_value()
             score_submission()
 
-        if screen in (SCREEN_LOGIN, SCREEN_GAME):
+        if screen in (SCREEN_LOGIN, SCREEN_GAME) and not browser_uses_native_inputs():
             pygame.key.start_text_input()
         else:
             pygame.key.stop_text_input()
@@ -950,12 +953,18 @@ async def main():
                 break
 
             if event.type == pygame.TEXTINPUT:
+                if browser_uses_native_inputs():
+                    continue
+
                 if screen == SCREEN_LOGIN:
                     handle_login_text(event)
                 elif screen == SCREEN_GAME:
                     handle_game_text(event)
 
             if event.type == pygame.KEYDOWN:
+                if browser_uses_native_inputs():
+                    continue
+
                 if screen == SCREEN_LOGIN:
                     handle_login_key(event)
                 elif screen == SCREEN_MENU:
