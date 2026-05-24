@@ -284,20 +284,27 @@ function custom_postrun() {}
             position: fixed;
             pointer-events: auto;
             border: 0;
-            border-radius: 16px;
+            border-radius: 0;
             padding: 0 18px;
             font-size: 17px;
+            line-height: 1.2;
             font-family: Verdana, sans-serif;
             color: #0f1826;
-            background: rgba(245, 248, 252, 0.96);
-            box-shadow: 0 4px 12px rgba(14, 23, 35, 0.06);
-            outline: 2px solid rgba(72, 141, 255, 0.18);
+            background: transparent;
+            box-shadow: none;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
             -webkit-appearance: none;
             appearance: none;
         }
 
         .mobile-input::placeholder {
             color: #a5afbd;
+        }
+
+        .mobile-input:focus {
+            outline: none;
+            box-shadow: none;
         }
     </style>
 

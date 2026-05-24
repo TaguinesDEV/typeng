@@ -352,7 +352,7 @@ def draw_button(rect, text, fill, hover_fill, text_color=WHITE):
     return hovered
 
 
-def draw_input(rect, label, value, active=False, secret=False, placeholder=""):
+def draw_input(rect, label, value, active=False, secret=False, placeholder="", show_text=True):
     label_surface = small_font.render(label, True, TEXT_MUTED)
     window.blit(label_surface, (rect.x, rect.y - 22))
 
@@ -364,6 +364,9 @@ def draw_input(rect, label, value, active=False, secret=False, placeholder=""):
         border_color=INPUT_ACTIVE if active else PANEL_LINE,
         border_width=2,
     )
+
+    if not show_text:
+        return
 
     display_value = value
     if secret:
@@ -589,6 +592,7 @@ def draw_banner():
 def draw_login():
     buttons = login_buttons()
     draw_background()
+    show_canvas_text = browser_window() is None
 
     draw_center_text("Typing Master", title_font, INK, 92)
     draw_center_text("Log in or register to save your best typing scores.", small_font, TEXT_MUTED, 144)
@@ -603,6 +607,7 @@ def draw_login():
         login_username,
         active=login_focus == "username",
         placeholder="Enter username",
+        show_text=show_canvas_text,
     )
     draw_input(
         buttons["password"],
@@ -611,6 +616,7 @@ def draw_login():
         active=login_focus == "password",
         secret=True,
         placeholder="Enter password",
+        show_text=show_canvas_text,
     )
 
     draw_button(buttons["login"], "LOG IN", BLUE, BLUE_DARK)
@@ -658,6 +664,7 @@ def draw_menu():
 def draw_game():
     buttons = game_buttons()
     draw_background()
+    show_canvas_text = browser_window() is None
 
     header = pygame.Rect(28, 78, WIDTH - 56, 108)
     draw_shadow(header, alpha=42, radius=24, offset=(0, 5))
@@ -683,6 +690,7 @@ def draw_game():
         game_input,
         active=True,
         placeholder="Start typing here",
+        show_text=show_canvas_text,
     )
 
     draw_button(buttons["submit"], "SUBMIT", BLUE, BLUE_DARK)
