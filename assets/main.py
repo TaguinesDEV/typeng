@@ -83,6 +83,7 @@ banner_color = MINT_DARK
 banner_until = 0
 web_login_panel_visible = False
 web_menu_panel_visible = False
+web_ranking_panel_visible = False
 web_game_input_visible = False
 
 
@@ -239,6 +240,43 @@ def hide_web_menu_panel():
     web_menu_panel_visible = False
 
 
+def show_web_ranking_panel():
+    global web_ranking_panel_visible
+
+    browser = browser_window()
+    if browser is None:
+        return
+
+    rows = [
+        {
+            "username": username,
+            "best_score": best_score,
+            "games_played": games_played,
+        }
+        for username, best_score, games_played in ranking_rows()
+    ]
+
+    try:
+        browser.showRankingPanel(json.dumps(rows), banner_text)
+        web_ranking_panel_visible = True
+    except Exception:
+        web_ranking_panel_visible = False
+
+
+def hide_web_ranking_panel():
+    global web_ranking_panel_visible
+
+    browser = browser_window()
+    if browser is None:
+        return
+
+    try:
+        browser.hideRankingPanel()
+    except Exception:
+        pass
+    web_ranking_panel_visible = False
+
+
 def sync_web_login_form_values():
     global login_username, login_password
 
@@ -337,6 +375,8 @@ def sync_web_overlay_visibility():
     if screen == SCREEN_LOGIN:
         if web_menu_panel_visible:
             hide_web_menu_panel()
+        if web_ranking_panel_visible:
+            hide_web_ranking_panel()
         if not web_login_panel_visible:
             show_web_login_panel()
         if web_game_input_visible:
@@ -344,8 +384,19 @@ def sync_web_overlay_visibility():
     elif screen == SCREEN_MENU:
         if web_login_panel_visible:
             hide_web_login_panel()
+        if web_ranking_panel_visible:
+            hide_web_ranking_panel()
         if not web_menu_panel_visible:
             show_web_menu_panel()
+        if web_game_input_visible:
+            hide_web_game_input()
+    elif screen == SCREEN_RANKING:
+        if web_login_panel_visible:
+            hide_web_login_panel()
+        if web_menu_panel_visible:
+            hide_web_menu_panel()
+        if not web_ranking_panel_visible:
+            show_web_ranking_panel()
         if web_game_input_visible:
             hide_web_game_input()
     elif screen == SCREEN_GAME:
@@ -353,6 +404,8 @@ def sync_web_overlay_visibility():
             hide_web_login_panel()
         if web_menu_panel_visible:
             hide_web_menu_panel()
+        if web_ranking_panel_visible:
+            hide_web_ranking_panel()
         if not web_game_input_visible:
             show_web_game_input()
     else:
@@ -360,6 +413,8 @@ def sync_web_overlay_visibility():
             hide_web_login_panel()
         if web_menu_panel_visible:
             hide_web_menu_panel()
+        if web_ranking_panel_visible:
+            hide_web_ranking_panel()
         if web_game_input_visible:
             hide_web_game_input()
 
@@ -818,8 +873,12 @@ def draw_game():
 
 
 def draw_ranking():
-    buttons = ranking_buttons()
     draw_background()
+
+    if browser_window() is not None:
+        return
+
+    buttons = ranking_buttons()
 
     draw_center_text("Top Typing Masters", title_font, INK, 82)
 
@@ -992,6 +1051,8 @@ async def main():
             sync_web_login_message()
         elif screen == SCREEN_MENU:
             show_web_menu_panel()
+        elif screen == SCREEN_RANKING:
+            show_web_ranking_panel()
         elif screen == SCREEN_GAME:
             sync_web_game_input_value()
 
@@ -1010,6 +1071,8 @@ async def main():
             screen = SCREEN_RANKING
         elif web_action == "logout" and screen == SCREEN_MENU:
             logout_user()
+        elif web_action == "ranking-back" and screen == SCREEN_RANKING:
+            screen = SCREEN_MENU if current_user else SCREEN_LOGIN
         elif web_action == "submit" and screen == SCREEN_GAME:
             sync_web_game_input_value()
             score_submission()

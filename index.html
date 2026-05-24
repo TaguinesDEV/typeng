@@ -171,6 +171,66 @@ function hideMenuPanel() {
     }
 }
 
+function showRankingPanel(rowsJson = "[]", message = "") {
+    const overlay = document.getElementById("mobileRankingPanel")
+    const list = document.getElementById("rankingPanelList")
+    const emptyState = document.getElementById("rankingPanelEmpty")
+    const messageBox = document.getElementById("rankingPanelMessage")
+    let rows = []
+
+    try {
+        rows = JSON.parse(rowsJson ?? "[]")
+    } catch (error) {
+        console.warn(error)
+        rows = []
+    }
+
+    list.innerHTML = ""
+    if (rows.length === 0) {
+        emptyState.hidden = false
+    } else {
+        emptyState.hidden = true
+        rows.forEach((row, index) => {
+            const item = document.createElement("div")
+            item.className = "web-ranking-row"
+            const name = document.createElement("div")
+            name.className = "web-ranking-name"
+            name.textContent = `${index + 1}. ${row.username ?? "Player"}`
+            const stats = document.createElement("div")
+            stats.className = "web-ranking-stats"
+            stats.textContent = `${row.best_score ?? 0} pts • ${row.games_played ?? 0} game(s)`
+            item.appendChild(name)
+            item.appendChild(stats)
+            list.appendChild(item)
+        })
+    }
+
+    messageBox.textContent = message ?? ""
+    overlay.hidden = false
+    document.body.classList.add("login-panel-open")
+    const canvasEl = document.getElementById("canvas")
+    const canvas3dEl = document.getElementById("canvas3d")
+    if (canvasEl) {
+        canvasEl.style.visibility = "hidden"
+    }
+    if (canvas3dEl) {
+        canvas3dEl.style.visibility = "hidden"
+    }
+}
+
+function hideRankingPanel() {
+    document.getElementById("mobileRankingPanel").hidden = true
+    document.body.classList.remove("login-panel-open")
+    const canvasEl = document.getElementById("canvas")
+    const canvas3dEl = document.getElementById("canvas3d")
+    if (canvasEl) {
+        canvasEl.style.visibility = "visible"
+    }
+    if (canvas3dEl) {
+        canvas3dEl.style.visibility = "hidden"
+    }
+}
+
 function getLoginFormValues() {
     return {
         username: document.getElementById("loginPanelUsername").value,
@@ -466,6 +526,7 @@ async function custom_onload(debug_hidden) {
     const menuRankingButton = document.getElementById("menuPanelRanking")
     const menuLogoutButton = document.getElementById("menuPanelLogout")
     const menuInstallButton = document.getElementById("menuPanelInstall")
+    const rankingBackButton = document.getElementById("rankingPanelBack")
     const installNowButton = document.getElementById("installNowButton")
     const closeInstallButton = document.getElementById("closeInstallModal")
     const installModal = document.getElementById("installModal")
@@ -513,6 +574,10 @@ async function custom_onload(debug_hidden) {
 
     bindButtonPress(menuInstallButton, () => {
         requestInstallApp()
+    })
+
+    bindButtonPress(rankingBackButton, (event) => {
+        submitOverlayAction("ranking-back", event)
     })
 
     bindButtonPress(installNowButton, () => {
@@ -730,6 +795,41 @@ function custom_postrun() {}
             color: #0f1826;
             font-size: 24px;
             font-weight: 700;
+        }
+
+        .web-ranking-list {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .web-ranking-row {
+            border-radius: 18px;
+            border: 1px solid rgba(218, 228, 240, 0.9);
+            background: #f5f8fc;
+            padding: 14px 16px;
+        }
+
+        .web-ranking-name {
+            color: #0f1826;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .web-ranking-stats {
+            margin-top: 6px;
+            color: #617080;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .web-ranking-empty {
+            margin: 0 0 18px;
+            color: #617080;
+            font-size: 15px;
+            line-height: 1.5;
+            text-align: center;
+            font-weight: 600;
         }
 
         .web-login-label {
@@ -977,6 +1077,18 @@ height="760px"
                     <button id="menuPanelLogout" class="web-login-button ranking" type="button" onclick="return submitOverlayAction('logout', event)" ontouchend="return submitOverlayAction('logout', event)" onpointerup="return submitOverlayAction('logout', event)">LOG OUT</button>
                     <button id="menuPanelInstall" class="web-login-button install" type="button" onclick="return openInstallFromButton(event)" ontouchend="return openInstallFromButton(event)" onpointerup="return openInstallFromButton(event)">INSTALL APP</button>
                 </div>
+            </div>
+        </div>
+    </div>
+    <div id="mobileRankingPanel" class="web-login" hidden>
+        <div class="web-login-inner">
+            <h1 class="web-login-title">Top Typing Masters</h1>
+            <p class="web-login-subtitle">Best scores from registered players.</p>
+            <div class="web-login-card">
+                <div id="rankingPanelList" class="web-ranking-list"></div>
+                <p id="rankingPanelEmpty" class="web-ranking-empty" hidden>No scores yet. Play a round to create the leaderboard.</p>
+                <div id="rankingPanelMessage" class="web-login-message"></div>
+                <button id="rankingPanelBack" class="web-login-button login" type="button" onclick="return submitOverlayAction('ranking-back', event)" ontouchend="return submitOverlayAction('ranking-back', event)" onpointerup="return submitOverlayAction('ranking-back', event)">BACK</button>
             </div>
         </div>
     </div>
