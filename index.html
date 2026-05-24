@@ -372,21 +372,20 @@ async function custom_onload(debug_hidden) {
 
     passwordInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-            event.preventDefault()
-            window.overlayAction = "login"
+            submitOverlayAction("login", event)
         }
     })
 
-    bindButtonPress(loginButton, () => {
-        window.overlayAction = "login"
+    bindButtonPress(loginButton, (event) => {
+        submitOverlayAction("login", event)
     })
 
-    bindButtonPress(registerButton, () => {
-        window.overlayAction = "register"
+    bindButtonPress(registerButton, (event) => {
+        submitOverlayAction("register", event)
     })
 
-    bindButtonPress(rankingButton, () => {
-        window.overlayAction = "ranking"
+    bindButtonPress(rankingButton, (event) => {
+        submitOverlayAction("ranking", event)
     })
 
     bindButtonPress(installButton, () => {
@@ -415,8 +414,7 @@ async function custom_onload(debug_hidden) {
 
     gameTypingInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-            event.preventDefault()
-            window.overlayAction = "submit"
+            submitOverlayAction("submit", event)
         }
     })
 
@@ -797,10 +795,10 @@ height="760px"
                 <input id="loginPanelPassword" class="web-login-field" type="password" inputmode="text" autocomplete="current-password" autocapitalize="none" spellcheck="false" placeholder="Enter password">
                 <div id="loginPanelMessage" class="web-login-message"></div>
                 <div class="web-login-grid">
-                    <button id="loginPanelLogin" class="web-login-button login" type="button" onclick="return submitOverlayAction('login', event)" ontouchend="return submitOverlayAction('login', event)" onpointerup="return submitOverlayAction('login', event)">LOG IN</button>
-                    <button id="loginPanelRegister" class="web-login-button register" type="button" onclick="return submitOverlayAction('register', event)" ontouchend="return submitOverlayAction('register', event)" onpointerup="return submitOverlayAction('register', event)">REGISTER</button>
-                    <button id="loginPanelRanking" class="web-login-button ranking" type="button" onclick="return submitOverlayAction('ranking', event)" ontouchend="return submitOverlayAction('ranking', event)" onpointerup="return submitOverlayAction('ranking', event)">RANKING</button>
-                    <button id="loginPanelInstall" class="web-login-button install" type="button" onclick="return openInstallFromButton(event)" ontouchend="return openInstallFromButton(event)" onpointerup="return openInstallFromButton(event)">INSTALL APP</button>
+                    <button id="loginPanelLogin" class="web-login-button login" type="button">LOG IN</button>
+                    <button id="loginPanelRegister" class="web-login-button register" type="button">REGISTER</button>
+                    <button id="loginPanelRanking" class="web-login-button ranking" type="button">RANKING</button>
+                    <button id="loginPanelInstall" class="web-login-button install" type="button">INSTALL APP</button>
                 </div>
                 <p class="web-login-tip">Tip: tap the fields and use your phone keyboard normally.</p>
             </div>
@@ -814,8 +812,8 @@ height="760px"
             <h2 id="installModalTitle" class="install-modal-title">Install App</h2>
             <p id="installModalBody" class="install-modal-body"></p>
             <div class="install-modal-actions">
-                <button id="installNowButton" class="install-modal-button primary" type="button" onclick="return installNowFromButton(event)" ontouchend="return installNowFromButton(event)" onpointerup="return installNowFromButton(event)">Install Now</button>
-                <button id="closeInstallModal" class="install-modal-button secondary" type="button" onclick="return closeInstallFromButton(event)" ontouchend="return closeInstallFromButton(event)" onpointerup="return closeInstallFromButton(event)">Close</button>
+                <button id="installNowButton" class="install-modal-button primary" type="button">Install Now</button>
+                <button id="closeInstallModal" class="install-modal-button secondary" type="button">Close</button>
             </div>
         </div>
     </div>
